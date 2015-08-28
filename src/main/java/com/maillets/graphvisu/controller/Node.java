@@ -1,10 +1,14 @@
 package com.maillets.graphvisu.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Node {
 
 	private int id;
 	private String name;
 	private int group;
+	private List<Attribute> attributes = new ArrayList<>();
 
 	public int getId() {
 		return id;
@@ -28,5 +32,13 @@ public class Node {
 
 	public void setGroup(int group) {
 		this.group = group;
+	}
+
+	public List<Attribute> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(List<Attribute> attributes) {
+		this.attributes = attributes;
 	}
 }

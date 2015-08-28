@@ -16,6 +16,19 @@ App.controller('homeController', function($scope, $http, $location,
 	$scope.links = [];
 	$scope.receivedNodes = false;
 	$scope.receivedLinks = false;
+	$scope.charge = -150;
+	$scope.linkDistance = 40;
+	$scope.width = 800;
+	$scope.height = 600;
+	$scope.attributes = [];
+	$scope.name = "";
+
+	var handleClick = function(d, i) {
+		$scope.$apply(function() {
+			$scope.name = d.name;
+			$scope.attributes = d.attributes;
+		});
+	};
 
 	$scope.init = function() {
 
@@ -23,15 +36,14 @@ App.controller('homeController', function($scope, $http, $location,
 			nodes : $scope.nodes,
 			links : $scope.links
 		};
-		var width = 960, height = 500;
 
 		var color = d3.scale.category20();
 
-		var force = d3.layout.force().charge(-120).linkDistance(30).size(
-				[ width, height ]);
+		var force = d3.layout.force().charge($scope.charge).linkDistance(
+				$scope.linkDistance).size([ $scope.width, $scope.height ]);
 
-		var svg = d3.select("#graph").append("svg").attr("width", width).attr(
-				"height", height);
+		var svg = d3.select("#graph").append("svg").attr("width", $scope.width)
+				.attr("height", $scope.height);
 
 		force.nodes(graph.nodes).links(graph.links).start();
 
@@ -42,10 +54,10 @@ App.controller('homeController', function($scope, $http, $location,
 				});
 
 		var node = svg.selectAll(".node").data(graph.nodes).enter().append(
-				"circle").attr("class", "node").attr("r", 5).style("fill",
+				"circle").attr("class", "node").attr("r", 10).style("fill",
 				function(d) {
 					return color(d.group);
-				}).call(force.drag);
+				}).on("click", handleClick).call(force.drag);
 
 		node.append("title").text(function(d) {
 			return d.name;
@@ -77,7 +89,6 @@ App.controller('homeController', function($scope, $http, $location,
 		if ($scope.receivedNodes && $scope.receivedLinks) {
 			$scope.init();
 		}
-
 	};
 
 	var handleGetLinksSuccess = function(data, status) {

@@ -7,3 +7,9 @@
 	stroke: #999;
 	stroke-opacity: .6;
 }
+
+#graph {
+	border: solid;
+	border-width: 3px;
+	border-color: #222222;
+}
