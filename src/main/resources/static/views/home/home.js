@@ -16,8 +16,9 @@ App.controller('homeController', function($scope, $http, $location,
 	$scope.links = [];
 	$scope.receivedNodes = false;
 	$scope.receivedLinks = false;
-	$scope.charge = -150;
-	$scope.linkDistance = 40;
+	$scope.charge = -1000;
+	$scope.linkDistance = 100;
+	$scope.linkStrength = 0.5;
 	$scope.width = 800;
 	$scope.height = 600;
 	$scope.attributes = [];
@@ -26,20 +27,30 @@ App.controller('homeController', function($scope, $http, $location,
 	var color = d3.scale.category20();
 
 	var force = d3.layout.force().charge($scope.charge).linkDistance(
-			$scope.linkDistance).size([ $scope.width, $scope.height ]);
+			$scope.linkDistance).linkStrength($scope.linkStrength).size(
+			[ $scope.width, $scope.height ]);
 
 	var svg = d3.select("#graph").append("svg").attr("width", $scope.width)
 			.attr("height", $scope.height).attr("pointer-events", "all").call(
 					d3.behavior.zoom().on("zoom", redraw)).append('g');
 
+	function resize() {
+		var parent = d3.select("#graph")[0][0];
+		var width = parent.clientWidth;
+		var height = parent.clientHeight;
+
+		d3.select("svg").attr("width", width).attr("height", height);
+	}
+	d3.select(window).on('resize', resize);
+
 	function redraw() {
 		svg.attr("transform", "translate(" + d3.event.translate + ")"
 				+ " scale(" + d3.event.scale + ")");
 	}
-	
+
 	var drag = force.stop().drag().on("dragstart", function(d) {
 		d3.event.sourceEvent.stopPropagation(); // to prevent pan functionality
-												// from
+		// from
 		// overriding node drag functionality.
 		// put any other 'dragstart' actions here
 	});
@@ -59,6 +70,12 @@ App.controller('homeController', function($scope, $http, $location,
 		};
 
 		force.nodes(graph.nodes).links(graph.links).start();
+
+		var texts = svg.selectAll("text.label").data(graph.nodes).enter()
+				.append("text").attr("class", "label").attr("fill", "white")
+				.text(function(d) {
+					return d.name;
+				});
 
 		var link = svg.selectAll(".link").data(graph.links).enter().append(
 				"line").attr("class", "link").style("stroke-width",
@@ -97,6 +114,9 @@ App.controller('homeController', function($scope, $http, $location,
 			}).attr("cy", function(d) {
 				return d.y;
 			});
+			texts.attr("transform", function(d) {
+				return "translate(" + (d.x + 15) + "," + d.y + ")";
+			});
 		});
 	};
 
@@ -106,6 +126,7 @@ App.controller('homeController', function($scope, $http, $location,
 
 		if ($scope.receivedNodes && $scope.receivedLinks) {
 			$scope.init();
+			resize();
 		}
 	};
 
@@ -115,6 +136,7 @@ App.controller('homeController', function($scope, $http, $location,
 
 		if ($scope.receivedNodes && $scope.receivedLinks) {
 			$scope.init();
+			resize();
 		}
 	};
 	graphService.getLinks().success(handleGetLinksSuccess);
