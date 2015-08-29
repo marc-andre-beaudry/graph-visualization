@@ -23,6 +23,27 @@ App.controller('homeController', function($scope, $http, $location,
 	$scope.attributes = [];
 	$scope.name = "";
 
+	var color = d3.scale.category20();
+
+	var force = d3.layout.force().charge($scope.charge).linkDistance(
+			$scope.linkDistance).size([ $scope.width, $scope.height ]);
+
+	var svg = d3.select("#graph").append("svg").attr("width", $scope.width)
+			.attr("height", $scope.height).attr("pointer-events", "all").call(
+					d3.behavior.zoom().on("zoom", redraw)).append('g');
+
+	function redraw() {
+		svg.attr("transform", "translate(" + d3.event.translate + ")"
+				+ " scale(" + d3.event.scale + ")");
+	}
+	
+	var drag = force.stop().drag().on("dragstart", function(d) {
+		d3.event.sourceEvent.stopPropagation(); // to prevent pan functionality
+												// from
+		// overriding node drag functionality.
+		// put any other 'dragstart' actions here
+	});
+
 	var handleClick = function(d, i) {
 		$scope.$apply(function() {
 			$scope.name = d.name;
@@ -36,14 +57,6 @@ App.controller('homeController', function($scope, $http, $location,
 			nodes : $scope.nodes,
 			links : $scope.links
 		};
-
-		var color = d3.scale.category20();
-
-		var force = d3.layout.force().charge($scope.charge).linkDistance(
-				$scope.linkDistance).size([ $scope.width, $scope.height ]);
-
-		var svg = d3.select("#graph").append("svg").attr("width", $scope.width)
-				.attr("height", $scope.height);
 
 		force.nodes(graph.nodes).links(graph.links).start();
 
@@ -62,6 +75,11 @@ App.controller('homeController', function($scope, $http, $location,
 		node.append("title").text(function(d) {
 			return d.name;
 		});
+
+		node.append("text").attr("dx", 12).attr("dy", ".35em").text(
+				function(d) {
+					return d.name
+				});
 
 		force.on("tick", function() {
 			link.attr("x1", function(d) {
